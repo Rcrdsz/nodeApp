@@ -4,13 +4,11 @@ const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 
-const productSchema = new mongoose.Schema({    
+const categorySchema = new mongoose.Schema({
     _title: String,
     _desctiption: String,
-    _price: Number,
-    _category: String
-});    
-const Product = mongoose.model('product', productSchema);    
+});
+const Category = mongoose.model('category', categorySchema);
 
 //define dois métodos estáticos para tratamento dos erros
 const { check, validationResult } = require('express-validator');
@@ -18,16 +16,16 @@ const { check, validationResult } = require('express-validator');
 //define uma função anônima que recebe a aplicação como parâmetro
 module.exports = (app) => {
 
-    let route = app.route('/products');//define um caminho para a rota
+    let route = app.route('/category');//define um caminho para a rota
 
     //trata a requisição com método get
     route.get((req, res) => {
-       Product.find({}).exec((err, products) => {
+        Category.find({}).exec((err, category) => {
             if (err) {
                 app.utils.errors.send(err, req, res);
             } else {
                 res.status(200).setHeader('Content-Type', 'application/json').json({
-                    products: products
+                    category:category
                 });
             }
         });
@@ -38,9 +36,7 @@ module.exports = (app) => {
         //validações de alguns campos recebidos na requisição
         [
             check('_title', 'Title required').notEmpty(),
-            check('_description', 'Description required').notEmpty(),
-            check('_price', 'Price required').notEmpty(),
-            check('_category', 'A senha deve conter seis dígitos').notEmpty()
+            check('_description', 'Description required').notEmpty(),          
         ],
         (req, res) => {
 
@@ -51,20 +47,20 @@ module.exports = (app) => {
                 return false;
             }
             //insere no banco
-            db.collection('products').insertOne(req.body, (err, products) => {
+            db.collection('category').insertOne(req.body, (err, category) => {
                 if (err) { //se não houver erros
                     app.utils.errors.send(err, req, res);
                 } else {
-                    res.status(200).json(products);//retorna uma resposta com o valor inserido
+                    res.status(200).json(category);//retorna uma resposta com o valor inserido
                 }
             });
         });
 
-    let routeID = app.route('/products/:id'); //define um caminho para rota products com endpoint id
+    let routeID = app.route('/category/:id'); //define um caminho para rota categorias com endpoint id
 
     //trata a requisição com método get
     routeID.get((req, res) => {
-        Product.findOne({ _id: req.params.id }).exec((err, user) => {
+        Category.findOne({ _id: req.params.id }).exec((err, user) => {
             if (err) {
                 app.utils.errors.send(err, req, res);
             } else {
@@ -75,7 +71,7 @@ module.exports = (app) => {
 
 
     routeID.put((req, res) => {
-        Product.findOneAndUpdate({ _id: req.params.id }, {$set:req.body}, (err) => { //procura uma _id com base na id recebida na requisição
+        Category.findOneAndUpdate({ _id: req.params.id }, {$set:req.body}, (err) => { //procura uma _id com base na id recebida na requisição
             if (err) {
                 app.utils.errors.send(err, req, res);
             } else {
@@ -85,7 +81,7 @@ module.exports = (app) => {
         });
     });
 
-    routeID.delete((req, res) => {
-        Product.deleteOne({ _id: req.params.id });             
+    routeID.delete((req, res) => {       
+            Category.deleteOne({ _id: req.params.id });        
     });
 }
